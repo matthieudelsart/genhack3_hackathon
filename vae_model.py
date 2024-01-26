@@ -117,9 +117,9 @@ yields_df = pd.read_csv('CSVs/yields_subset.csv')
 yields_tensor = torch.tensor(yields_df.iloc[:, 2:].values)
 
 verbose = True
-epochs = 200
+epochs = 300
 lr = 1e-3
-latent_dims = 50
+latent_dims = 25
 
 vae = VariationalAutoencoder(latent_dims=latent_dims, input_dims=4, output_dims=4, verbose=verbose)
 optimizer = torch.optim.Adam(vae.parameters(), lr=lr) #, weight_decay=1e-5)
