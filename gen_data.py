@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import torch
 
-from gen_model import Generator, Discriminator, train_gan
+from gan_model import Generator, Discriminator, train_gan
 
 # TRAIN MODEL
 yields_df = pd.read_csv('CSVs/yields_subset.csv')

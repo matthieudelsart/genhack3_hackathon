@@ -7,5 +7,4 @@ indx_range = np.arange(0, len(noise_full))
 indx_selected = np.random.choice(indx_range, size=25, replace=False)
 noise = noise_full[indx_selected]
 
-print(len(noise[0]))
-print(noise)
+print(np.mean(noise), np.var(noise))
