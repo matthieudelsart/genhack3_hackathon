@@ -4,6 +4,8 @@ import torch.nn.functional as F
 import pandas as pd
 import numpy as np
 
+import ot
+
 class VariationalEncoder(nn.Module):
     def __init__(self, latent_dims, input_dims):  
         super(VariationalEncoder, self).__init__()
@@ -17,7 +19,7 @@ class VariationalEncoder(nn.Module):
         self.fc5 = nn.Linear(64, self.latent_dims)
         self.fc6 = nn.Linear(64, self.latent_dims)
 
-        self.N = torch.distributions.Normal(0, 1)
+        self.N = torch.distributions.Normal(0, 1) # Try a prior which is a mixture of gaussians?
         self.kl = 0
 
     def forward(self, x):
@@ -113,13 +115,13 @@ def test_vae(vae, X_test):
     return val_loss / len(X_test)
 
 
-yields_df = pd.read_csv('CSVs/yields_subset.csv')
-yields_tensor = torch.tensor(yields_df.iloc[:, 2:].values)
+yields_df = pd.read_csv('CSVs/yields_subset.csv').iloc[:, 2:]
+yields_tensor = torch.tensor(yields_df.values)
 
 verbose = True
-epochs = 300
+epochs = 200
 lr = 1e-3
-latent_dims = 25
+latent_dims = 40
 
 vae = VariationalAutoencoder(latent_dims=latent_dims, input_dims=4, output_dims=4, verbose=verbose)
 optimizer = torch.optim.Adam(vae.parameters(), lr=lr) #, weight_decay=1e-5)
@@ -132,6 +134,7 @@ for epoch in range(epochs):
     if epoch % 10 == 0 and verbose:
         print('\n EPOCH {}/{} \t train loss {:.3f}'.format(epoch + 1, epochs,train_loss))
 
+# GENERATION
 # Import noise array
 noise = np.load('data/noise.npy')[:, :latent_dims]
 indx_range = np.arange(0, len(noise))
@@ -147,6 +150,8 @@ yields_gen_tensor = generator(noise)
 yields_gen_numpy = yields_gen_tensor.detach().numpy()
 
 yields_gen_df = pd.DataFrame(yields_gen_numpy, columns=["YIELD_1", "YIELD_2", "YIELD_3", "YIELD_4"])
+
+print(ot.sliced.sliced_wasserstein_distance(yields_df.to_numpy(), yields_gen_df.to_numpy(), seed=0))
 
 # Save the DataFrame to a CSV file
 yields_gen_df.to_csv('CSVs/vae_yields_subset.csv', index=False)

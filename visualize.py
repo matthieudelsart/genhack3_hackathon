@@ -13,7 +13,7 @@ for i in range(1, 5):
     column_to_plot_subset = subset_yields[f'YIELD_{i}']
 
     plt.hist([column_to_plot_gen, column_to_plot_subset], 
-             bins=20, alpha=0.5, label=[f'Histograms of Generated {model} Yields {i}',
+             bins=50, alpha=0.8, label=[f'Histograms of Generated {model} Yields {i}',
                                          f'Histograms of Original Yields {i}'])
 
     plt.legend()
