@@ -1,1 +1,1 @@
-2024-01-31 13:29:07,535:DEBUG: linear(): argument 'input' (position 1) must be Tensor, not numpy.ndarray
+2024-01-31 13:33:36,357:DEBUG: Can't call numpy() on Tensor that requires grad. Use tensor.detach().numpy() instead.
