@@ -10,6 +10,8 @@
 # See below an example of a generative model
 # Z |-> G_\theta(Z)
 ############################################################################
+from vae_model import VariationalAutoencoder
+import torch
 
 # <!> DO NOT ADD ANY OTHER ARGUMENTS <!>
 def generative_model(noise):
@@ -23,11 +25,16 @@ def generative_model(noise):
     """
     # See below an example
     # ---------------------
-    latent_variable = noise[:, ...]  # choose the appropriate latent dimension of your model
+    latent_dims = 40
+    latent_variable = noise[:, :latent_dims]  # choose the appropriate latent dimension of your model
 
     # load your parameters or your model
     # <!> be sure that they are stored in the parameters/ directory <!>
-    model = ...
+    full_model = VariationalAutoencoder(latent_dims=latent_dims, input_dims=4, output_dims=4, verbose=False)
+    full_model.load_state_dict(torch.load('models/vae_model.pth'))
+    
+    model = full_model.decoder
+    model.eval()
 
     return model(latent_variable) # G(Z)
 

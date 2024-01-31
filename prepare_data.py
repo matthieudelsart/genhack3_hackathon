@@ -27,8 +27,10 @@ common_years = set.intersection(*years_per_station)
 # Select the yields of each common_years and create a dataframe out of it
 yield_data = {'YEAR': list(common_years)}
 for i, df in enumerate(dfs):
-    yield_data[f'YIELD_{i + 1}'] = df.loc[df['YEAR'].isin(common_years), 'YIELD'].tolist()
+    yield_data[f'YIELD_{i+1}'] = df.loc[df['YEAR'].isin(common_years), 'YIELD'].tolist()
+    for j in range(13, 16):
+        yield_data[f'W{j}_{i+1}'] = df.loc[df['YEAR'].isin(common_years), f'W_{j}'].tolist()
 
 yield_df = pd.DataFrame(yield_data)
 
-yield_df.to_csv('yields_subset.csv')
+yield_df.to_csv('CSVs/yields_subset_full.csv')

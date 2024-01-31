@@ -15,9 +15,10 @@ class VariationalEncoder(nn.Module):
         self.fc1 = nn.Linear(input_dims, 32)
         self.fc2 = nn.Linear(32, 128)
         self.fc3 = nn.Linear(128, 256)
-        self.fc4 = nn.Linear(256, 64)
-        self.fc5 = nn.Linear(64, self.latent_dims)
+        self.fc4 = nn.Linear(256, 128)
+        self.fc5 = nn.Linear(128, 64)
         self.fc6 = nn.Linear(64, self.latent_dims)
+        self.fc7 = nn.Linear(64, self.latent_dims)
 
         self.N = torch.distributions.Normal(0, 1) # Try a prior which is a mixture of gaussians?
         self.kl = 0
@@ -27,8 +28,9 @@ class VariationalEncoder(nn.Module):
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = F.relu(self.fc4(x))
-        mu = self.fc5(x)
-        sigma = torch.exp(self.fc6(x))
+        x = F.relu(self.fc5(x))
+        mu = self.fc6(x)
+        sigma = torch.exp(self.fc7(x))
         N = self.N.sample(mu.shape)
         z = mu + sigma * N
         self.kl = (sigma**2 + mu**2 - torch.log(sigma) - 1/2).sum()
@@ -43,8 +45,9 @@ class VariationalDecoder(nn.Module):
         self.fc1 = nn.Linear(latent_dims, 64)
         self.fc2 = nn.Linear(64, 256)
         self.fc3 = nn.Linear(256, 128)
-        self.fc4 = nn.Linear(128, 32)
-        self.fc5 = nn.Linear(32, output_dims)
+        self.fc4 = nn.Linear(128, 64)
+        self.fc5 = nn.Linear(64, 32)
+        self.fc6 = nn.Linear(32, output_dims)
         
     def forward(self, z):
         z = F.relu(self.fc1(z))
@@ -52,6 +55,7 @@ class VariationalDecoder(nn.Module):
         z = F.relu(self.fc3(z))
         z = F.relu(self.fc4(z))
         z = F.relu(self.fc5(z))
+        z = F.relu(self.fc6(z))
         return z
     
 class VariationalAutoencoder(nn.Module):
@@ -66,20 +70,21 @@ class VariationalAutoencoder(nn.Module):
         return self.decoder(z)
     
 ### Training function
-def train_vae(vae, X_train, optimizer):
+def train_vae(vae, X_train_input, X_train_output, optimizer):
     # Set train mode for both the encoder and the decoder
     vae.train()
     batch = 25
     train_loss = 0.0
     verbose = vae.verbose
     # Iterate the dataloader (we do not need the label values, this is unsupervised learning)
-    for i in range(0, len(X_train), batch):
-        batch_X = X_train[i:i+batch].float()
+    for i in range(0, len(X_train_input), batch):
+        batch_X_input = X_train_input[i:i+batch].float()
+        batch_X_output = X_train_output[i:i+batch].float()
         
-        x_hat = vae(batch_X)
+        x_hat = vae(batch_X_input)
 
         # Evaluate loss
-        loss = ((batch_X - x_hat)**2).sum() + vae.encoder.kl
+        loss = ((batch_X_output - x_hat)**2).sum() + vae.encoder.kl
         
         # Backward pass
         optimizer.zero_grad()
@@ -92,7 +97,7 @@ def train_vae(vae, X_train, optimizer):
 
         train_loss += loss.item()
 
-    return train_loss / len(X_train)
+    return train_loss / len(X_train_input)
 
 
 ### Testing function
@@ -116,7 +121,9 @@ def test_vae(vae, X_test):
 
 
 yields_df = pd.read_csv('CSVs/yields_subset.csv').iloc[:, 2:]
+yields_df_full = pd.read_csv('CSVs/yields_subset_full.csv').iloc[:, 2:]
 yields_tensor = torch.tensor(yields_df.values)
+yields_tensor_full = torch.tensor(yields_df_full.values)
 
 verbose = True
 epochs = 200
@@ -124,15 +131,18 @@ lr = 1e-3
 latent_dims = 40
 
 vae = VariationalAutoencoder(latent_dims=latent_dims, input_dims=4, output_dims=4, verbose=verbose)
-optimizer = torch.optim.Adam(vae.parameters(), lr=lr) #, weight_decay=1e-5)
+optimizer = torch.optim.Adam(vae.parameters(), lr=lr) #, weight_decay=1e-3)
 
 # Train
 # ----------------------------------------------------------
 for epoch in range(epochs):
-    train_loss = train_vae(vae,yields_tensor,optimizer)
+    train_loss = train_vae(vae,yields_tensor, yields_tensor, optimizer)
     torch.cuda.empty_cache()
     if epoch % 10 == 0 and verbose:
         print('\n EPOCH {}/{} \t train loss {:.3f}'.format(epoch + 1, epochs,train_loss))
+
+# SAVE MODEL
+torch.save(vae.state_dict(), 'models/vae_model.pth')
 
 # GENERATION
 # Import noise array
