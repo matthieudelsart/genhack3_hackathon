@@ -142,7 +142,7 @@ for epoch in range(epochs):
         print('\n EPOCH {}/{} \t train loss {:.3f}'.format(epoch + 1, epochs,train_loss))
 
 # SAVE MODEL
-torch.save(vae.state_dict(), 'models/vae_model.pth')
+torch.save(vae.state_dict(), 'parameters/vae_model.pth')
 
 # GENERATION
 # Import noise array
