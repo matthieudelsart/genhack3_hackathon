@@ -1,5 +1,8 @@
-from model import generative_model
 import numpy as np
+import ot
+import pandas as pd
 
-noise = np.load("data/noise.npy")
-output = generative_model(noise)
+output = np.load("output.npy")
+print(len(output))
+yields_df = pd.read_csv('CSVs/yields_subset.csv').iloc[:, 2:]
+print(ot.sliced.sliced_wasserstein_distance(output[:, 0], yields_df.to_numpy()[:, 0], seed=0))

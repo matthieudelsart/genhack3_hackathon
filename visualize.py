@@ -1,15 +1,19 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 model = 'vae' # 'gan' or 'vae'
 
-gen_yields = pd.read_csv(f'CSVs/{model}_yields_subset.csv')
+#gen_yields = pd.read_csv(f'CSVs/{model}_yields_subset.csv')
+gen_yields = np.load("output.npy")
 subset_yields = pd.read_csv('CSVs/yields_subset.csv').iloc[:, 2:]
 
 for i in range(1, 5):
     plt.figure(figsize=(10, 8))
 
-    column_to_plot_gen = gen_yields[f'YIELD_{i}']
+    #column_to_plot_gen = gen_yields[f'YIELD_{i}']
+    rnd_index = np.random.randint(0, 9999, 1000)
+    column_to_plot_gen = gen_yields[rnd_index, i-1]
     column_to_plot_subset = subset_yields[f'YIELD_{i}']
 
     plt.hist([column_to_plot_gen, column_to_plot_subset], 
