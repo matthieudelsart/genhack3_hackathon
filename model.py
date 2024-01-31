@@ -11,6 +11,7 @@
 # Z |-> G_\theta(Z)
 ############################################################################
 import numpy as np
+from joblib import load
 
 # <!> DO NOT ADD ANY OTHER ARGUMENTS <!>
 def generative_model(noise):
@@ -29,7 +30,7 @@ def generative_model(noise):
 
     # load your parameters or your model
     # <!> be sure that they are stored in the parameters/ directory <!>
-    loaded_model = np.load('../parameters/gmm.joblib')
+    loaded_model = load('parameters/gmm.joblib')
 
     weights = loaded_model.weights_
     means = loaded_model.means_
