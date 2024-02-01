@@ -8,13 +8,12 @@
 # <!> *SAVE YOUR PARAMETERS IN THE parameters/ DICRECTORY* <!>
 #
 # See below an example of a generative model
-# Z |-> G_\theta(Z)
+# Z,x |-> G_\theta(Z,x)
 ############################################################################
-import numpy as np
-from joblib import load
 
 # <!> DO NOT ADD ANY OTHER ARGUMENTS <!>
-def generative_model(noise):
+
+def generative_model(noise, scenario):
     """
     Generative model
 
@@ -22,29 +21,19 @@ def generative_model(noise):
     ----------
     noise : ndarray with shape (n_samples, n_dim=4)
         input noise of the generative model
+    scenario: ndarray with shape (n_samples, n_scenarios=9)
+        input categorical variable of the conditional generative model
     """
     # See below an example
     # ---------------------
-    latent_dims = 4
-    latent_variable = noise[:, :latent_dims]  # choose the appropriate latent dimension of your model
+    latent_variable = noise[:, ...]  # choose the appropriate latent dimension of your model
 
     # load your parameters or your model
     # <!> be sure that they are stored in the parameters/ directory <!>
-    loaded_model = load('parameters/gmm.joblib')
+    model = ...
 
-    weights = loaded_model.weights_
-    means = loaded_model.means_
-    covariances = loaded_model.covariances_
-
-    simul = np.zeros((4,10_000))
-    for j in range(10000):
-        component_idx = np.random.choice(np.arange(len(weights)), p=weights)
-        S = np.linalg.cholesky(covariances[component_idx])
-        simul[:, j] = S @ latent_variable[j, :] + means[component_idx]
-
-    simul = (simul * (simul > 0)).T
-
-    return simul # G(Z)
+    return model(latent_variable) # G(Z)
+    # return model(latent_variable, scenario) # G(Z, x)
 
 
 
