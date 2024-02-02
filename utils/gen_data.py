@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import torch
 
-from gan_model import Generator, Discriminator, train_gan
+from models.gan_model import Generator, Discriminator, train_gan
 
 # TRAIN MODEL
 yields_df = pd.read_csv('CSVs/yields_subset.csv')
@@ -27,7 +27,8 @@ generator.eval()
 yields_gen_tensor = generator(noise)
 yields_gen_numpy = yields_gen_tensor.detach().numpy()
 
-yields_gen_df = pd.DataFrame(yields_gen_numpy, columns=["YIELD_1", "YIELD_2", "YIELD_3", "YIELD_4"])
+yields_gen_df = pd.DataFrame(yields_gen_numpy, columns=[
+                             "YIELD_1", "YIELD_2", "YIELD_3", "YIELD_4"])
 
 # Save the DataFrame to a CSV file
 yields_gen_df.to_csv('CSVs/gen_yields_subset.csv', index=False)
