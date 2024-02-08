@@ -51,7 +51,7 @@ def generative_model(noise, scenario):
     for j in range(noise.shape[0]):
         component_idx = np.random.choice(np.arange(len(weights)), p=weights)
         S = np.linalg.cholesky(covariances[component_idx])
-        simul[:, j] = S @ latent_variable[j] + means[component_idx]
+        simul[:, j] = S @ latent_variable[j].T + means[component_idx]
 
     simul = np.where(simul < 0, 0, simul)
     simul = np.where(simul > 15.75, 15.75, simul)
